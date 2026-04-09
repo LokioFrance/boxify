@@ -247,3 +247,5 @@ Projet **Lokio** — développé par **Clément Chermeux**.
 - [ ] Migration vers PostgreSQL pour la production
 - [ ] Mise en place du CI/CD
 - [ ] Système de connexion commune Lokio (Keycloak)
+- [ ] Rajouter système de bande cookie etc pour être aux normes
+
