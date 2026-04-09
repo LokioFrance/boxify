@@ -1,0 +1,46 @@
+services:
+
+  boxify:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: boxify
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - boxify_db:/app/data
+    ports:
+      - "${HOST_PORT:-8002}:8000"
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/items/"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  boxify-mcp:
+    build:
+      context: ./mcp_server
+      dockerfile: Dockerfile
+    container_name: boxify-mcp
+    restart: unless-stopped
+    environment:
+      BOXIFY_API_URL: "http://boxify:8000"
+      MCP_PORT: "${MCP_PORT:-9000}"
+      MCP_API_KEY: "${MCP_API_KEY:-}"
+      HONEYPOT_API_KEY: "${HONEYPOT_API_KEY:-}"
+    ports:
+      - "${MCP_HOST_PORT:-9003}:9000"
+    depends_on:
+      boxify:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "python", "-c", "import httpx; httpx.get('http://localhost:9000/sse').raise_for_status()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+
+volumes:
+  boxify_db:
